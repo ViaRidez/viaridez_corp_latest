@@ -1,0 +1,45 @@
+{
+  "driverPersonalInfo": {
+    "photoPath": "path/to/photo.jpg",
+    "username": "john_doe",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "phoneNumber": "+1234567890",
+    "city": "New York",
+    "address": "123 Main St"
+  },
+  "driverVehicleInfo": {
+    "rcNumber": "RC123456",
+    "vehicleNumber": "ABC1234",
+    "vehicleType": "Sedan",
+    "maxCapacity": "5",
+    "validPollution": "2023-12-31",
+    "validInsurance": "2024-12-31"
+  },
+  "driverDocumentInfo": {
+    "passportNumber": "P1234567",
+    "passportExpiry": "2025-12-31",
+    "passportPic": "path/to/passport.jpg",
+    "licenceNumber": "L1234567",
+    "licenceExpiry": "2024-12-31",
+    "licencePic": "path/to/licence.jpg",
+    "governmentIdType": "ID Card",
+    "governmentIdStatus": "Verified",
+    "governmentIdPic": "path/to/id.jpg"
+  },
+  "driverAddDetails": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "username": "john_doe",
+    "password": "password123",
+    "email": "john.doe@example.com",
+    "phoneNumber": "+1234567890",
+    "city": "New York",
+    "address": "123 Main St",
+    "passportNumber": "P1234567",
+    "passportExpiry": "2025-12-31",
+    "licenseNumber": "L1234567",
+    "licenseExpiry": "2024-12-31"
+  }
+}

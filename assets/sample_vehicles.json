@@ -1,0 +1,82 @@
+[
+  {
+    "vehicleType": "Car",
+    "vehicleName": "Tesla Model S",
+    "passengerCapacity": 5,
+    "fuelType": "Electric",
+    "cost": 800,
+    "vehicleImage": "assets/images/tesla_model_s.png"
+  },
+  {
+    "vehicleType": "Car",
+    "vehicleName": "BMW 3 Series",
+    "passengerCapacity": 5,
+    "fuelType": "Petrol",
+    "cost": 750,
+    "vehicleImage": "assets/images/bmw_3_series.png"
+  },
+  {
+    "vehicleType": "SUV",
+    "vehicleName": "Ford Explorer",
+    "passengerCapacity": 7,
+    "fuelType": "Petrol",
+    "cost": 850,
+    "vehicleImage": "assets/images/ford_explorer.png"
+  },
+  {
+    "vehicleType": "SUV",
+    "vehicleName": "Land Rover Defender",
+    "passengerCapacity": 5,
+    "fuelType": "Diesel",
+    "cost": 900,
+    "vehicleImage": "assets/images/land_rover_defender.png"
+  },
+  {
+    "vehicleType": "Truck",
+    "vehicleName": "Ford F-150",
+    "passengerCapacity": 3,
+    "fuelType": "Petrol",
+    "cost": 950,
+    "vehicleImage": "assets/images/ford_f150.png"
+  },
+  {
+    "vehicleType": "Truck",
+    "vehicleName": "Mercedes-Benz Actros",
+    "passengerCapacity": 2,
+    "fuelType": "Diesel",
+    "cost": 1000,
+    "vehicleImage": "assets/images/mercedes_actros.png"
+  },
+  {
+    "vehicleType": "Bus",
+    "vehicleName": "Volvo 9700",
+    "passengerCapacity": 50,
+    "fuelType": "Diesel",
+    "cost": 1000,
+    "vehicleImage": "assets/images/volvo_9700.png"
+  },
+  {
+    "vehicleType": "Bus",
+    "vehicleName": "Mercedes-Benz Tourismo",
+    "passengerCapacity": 55,
+    "fuelType": "Diesel",
+    "cost": 1000,
+    "vehicleImage": "assets/images/mercedes_tourismo.png"
+  },
+  {
+    "vehicleType": "Van",
+    "vehicleName": "Volkswagen Transporter",
+    "passengerCapacity": 8,
+    "fuelType": "Diesel",
+    "cost": 700,
+    "vehicleImage": "assets/images/vw_transporter.png"
+  },
+  {
+    "vehicleType": "Van",
+    "vehicleName": "Toyota HiAce",
+    "passengerCapacity": 10,
+    "fuelType": "Diesel",
+    "cost": 750,
+    "vehicleImage": "assets/images/toyota_hiace.png"
+  }
+]
