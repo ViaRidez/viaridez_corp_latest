@@ -1,10 +1,7 @@
 import '../../utils/styles.dart';
-import '../../widgets/opt_button.dart';
-import '../../widgets/opt_textfield.dart';
 import '../../widgets/title_logo.dart';
 import '../provider/auth_provider.dart';
 import 'dart:ui';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
@@ -21,22 +18,31 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _slideController;
+  late AnimationController _decorController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _passwordFocus = FocusNode();
 
   @override
   void initState() {
     super.initState();
     
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
     
     _slideController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
+    
+    _decorController = AnimationController(
+      duration: const Duration(seconds: 20),
+      vsync: this,
+    )..repeat();
     
     _fadeAnimation = CurvedAnimation(
       parent: _fadeController,
@@ -44,7 +50,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
     
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.15),
+      begin: const Offset(0.1, 0),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _slideController,
@@ -59,212 +65,364 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   void dispose() {
     _fadeController.dispose();
     _slideController.dispose();
+    _decorController.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final formKey = GlobalKey<FormState>();
+    final size = MediaQuery.of(context).size;
+    final isMobile = size.width < 900;
 
     return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final screenWidth = constraints.maxWidth;
-
-          bool isMobile = screenWidth < 600;
-          bool isTablet = screenWidth >= 600 && screenWidth < 1024;
-
-          double containerWidth;
-
-          if (isMobile) {
-            containerWidth = screenWidth * 0.92;
-          } else if (isTablet) {
-            containerWidth = screenWidth * 0.65;
-          } else {
-            containerWidth = 450;
-          }
-
-          return Stack(
+      body: Stack(
+        children: [
+          // Map background
+          FlutterMap(
+            options: MapOptions(
+              initialCenter: LatLng(29.4396, 47.1780),
+              initialZoom: 10,
+              interactiveFlags: InteractiveFlag.none,
+              applyPointerTranslucencyToLayers: false,
+            ),
             children: [
-              // OpenStreetMap background
-              FlutterMap(
-                options: MapOptions(
-                  initialCenter: LatLng(29.4396, 47.1780),
-                  initialZoom: 10,
-                  interactiveFlags: InteractiveFlag.none,
-                  applyPointerTranslucencyToLayers: false,
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    subdomains: const ['a', 'b', 'c'],
-                    userAgentPackageName: 'com.example.app',
-                  ),
-                ],
-              ),
-              
-              // Subtle overlay
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.3),
-                      Colors.black.withOpacity(0.5),
-                    ],
-                  ),
-                ),
-              ),
-              
-              // Login Card
-              Center(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(
-                    vertical: isMobile ? 20 : 40,
-                    horizontal: isMobile ? 16 : 0,
-                  ),
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: _buildLoginCard(
-                        context,
-                        formKey,
-                        containerWidth,
-                        isMobile,
-                      ),
-                    ),
-                  ),
-                ),
+              TileLayer(
+                urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                subdomains: const ['a', 'b', 'c'],
+                userAgentPackageName: 'com.example.app',
               ),
             ],
-          );
-        },
+          ),
+          
+          // Dark overlay
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.black.withOpacity(0.6),
+                  Colors.black.withOpacity(0.7),
+                ],
+              ),
+            ),
+          ),
+          
+          // Main content
+          if (isMobile)
+            _buildMobileLayout(context, formKey)
+          else
+            _buildDesktopLayout(context, formKey),
+        ],
       ),
     );
   }
 
-  Widget _buildLoginCard(
-    BuildContext context,
-    GlobalKey<FormState> formKey,
-    double containerWidth,
-    bool isMobile,
-  ) {
+  Widget _buildMobileLayout(BuildContext context, GlobalKey<FormState> formKey) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: _buildLoginCard(context, formKey, true),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context, GlobalKey<FormState> formKey) {
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 1100, maxHeight: 700),
+        margin: const EdgeInsets.all(40),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 60,
+              spreadRadius: 0,
+              offset: const Offset(0, 20),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: Row(
+            children: [
+              // Left branded panel
+              Expanded(
+                flex: 5,
+                child: _buildBrandPanel(),
+              ),
+              
+              // Right login panel
+              Expanded(
+                flex: 5,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: _buildLoginCard(context, formKey, false),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBrandPanel() {
     return Container(
-      width: containerWidth,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 30,
-            spreadRadius: 0,
-            offset: const Offset(0, 10),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Styles.primaryColor,
+            Styles.secondaryColor,
+            Styles.tertiaryColor,
+          ],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Animated decorative circles
+          Positioned(
+            top: -100,
+            right: -100,
+            child: RotationTransition(
+              turns: _decorController,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 2,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -80,
+            left: -80,
+            child: RotationTransition(
+              turns: Tween<double>(begin: 0, end: -1).animate(_decorController),
+              child: Container(
+                width: 250,
+                height: 250,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 2,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(60),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Logo
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: const TitleLogo(),
+                ),
+                
+                const SizedBox(height: 60),
+                
+                // Welcome text
+                const Text(
+                  "Welcome to",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white,
+                    fontFamily: 'Lexend',
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                
+                const SizedBox(height: 8),
+                
+                const Text(
+                  "Corporate Portal",
+                  style: TextStyle(
+                    fontSize: 42,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    fontFamily: 'Lexend',
+                    letterSpacing: 0.5,
+                    height: 1.2,
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                Container(
+                  width: 80,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                Text(
+                  "Manage your corporate account and access all your business tools in one place.",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white.withOpacity(0.9),
+                    fontFamily: 'Lexend',
+                    letterSpacing: 0.3,
+                    height: 1.6,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(isMobile ? 28.0 : 48.0),
-        child: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Logo
-              Center(
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0.0, end: 1.0),
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeOut,
-                  builder: (context, value, child) {
-                    return Opacity(
-                      opacity: value,
-                      child: Transform.scale(
-                        scale: 0.8 + (0.2 * value),
-                        child: child,
+    );
+  }
+
+  Widget _buildLoginCard(BuildContext context, GlobalKey<FormState> formKey, bool isMobile) {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.all(isMobile ? 32 : 60),
+      child: Center(
+        child: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (isMobile) ...[
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Styles.primaryColor,
+                            Styles.secondaryColor,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                    );
-                  },
-                  child: const TitleLogo(),
+                      child: const TitleLogo(),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+                
+                // Title
+                Text(
+                  "Sign In",
+                  style: TextStyle(
+                    fontSize: isMobile ? 32 : 36,
+                    fontWeight: FontWeight.w800,
+                    color: Styles.tertiaryColor,
+                    fontFamily: 'Lexend',
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              
-              SizedBox(height: isMobile ? 28 : 36),
-              
-              // Title
-              Text(
-                "Corporate Login",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: isMobile ? 26 : 30,
-                  fontWeight: FontWeight.w700,
-                  color: Styles.secondaryColor,
-                  fontFamily: 'Lexend',
-                  letterSpacing: 0.3,
+                
+                const SizedBox(height: 12),
+                
+                Text(
+                  "Enter your credentials to access your account",
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey[600],
+                    fontFamily: 'Lexend',
+                    letterSpacing: 0.2,
+                  ),
                 ),
-              ),
-              
-              const SizedBox(height: 8),
-              
-              // Subtitle
-              Text(
-                "Welcome back! Please login to continue",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.grey[600],
-                  fontFamily: 'Lexend',
-                  letterSpacing: 0.2,
-                ),
-              ),
-              
-              SizedBox(height: isMobile ? 32 : 40),
-              
-              // Email Field
-              _buildAnimatedField(
-                delay: 100,
-                child: Consumer<AuthProvider>(
+                
+                const SizedBox(height: 48),
+                
+                // Email Field
+                Consumer<AuthProvider>(
                   builder: (context, authProvider, child) {
-                    return _buildTextField(
+                    return _buildModernTextField(
                       label: "Email Address",
-                      hint: "Enter your email",
+                      hint: "your.email@company.com",
                       controller: authProvider.usernameController,
-                      validator: (p0) => p0!.isEmpty
-                          ? "Email cannot be empty"
-                          : null,
+                      focusNode: _emailFocus,
+                      nextFocus: _passwordFocus,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Email is required";
+                        }
+                        if (!value.contains('@')) {
+                          return "Please enter a valid email";
+                        }
+                        return null;
+                      },
                       icon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                     );
                   },
                 ),
-              ),
-              
-              const SizedBox(height: 20),
-              
-              // Password Field
-              _buildAnimatedField(
-                delay: 200,
-                child: Consumer<AuthProvider>(
+                
+                const SizedBox(height: 24),
+                
+                // Password Field
+                Consumer<AuthProvider>(
                   builder: (context, authProvider, child) {
-                    return _buildTextField(
+                    return _buildModernTextField(
                       label: "Password",
                       hint: "Enter your password",
-                      isPassword: authProvider.hidePassword,
                       controller: authProvider.passwordController,
-                      validator: (p0) => p0!.isEmpty
-                          ? "Password cannot be empty"
-                          : null,
+                      focusNode: _passwordFocus,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Password is required";
+                        }
+                        if (value.length < 6) {
+                          return "Password must be at least 6 characters";
+                        }
+                        return null;
+                      },
                       icon: Icons.lock_outline,
+                      isPassword: authProvider.hidePassword,
                       suffix: IconButton(
                         icon: Icon(
                           authProvider.hidePassword
                               ? Icons.visibility_off_outlined
                               : Icons.visibility_outlined,
-                          color: Colors.grey[600],
+                          color: Styles.primaryColor,
                           size: 22,
                         ),
                         onPressed: () {
@@ -274,20 +432,17 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                     );
                   },
                 ),
-              ),
-              
-              const SizedBox(height: 12),
-              
-              // Forgot Password
-              _buildAnimatedField(
-                delay: 300,
-                child: Align(
+                
+                const SizedBox(height: 16),
+                
+                // Forgot Password
+                Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {},
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
+                        horizontal: 8,
                         vertical: 4,
                       ),
                     ),
@@ -296,21 +451,18 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                       style: TextStyle(
                         fontFamily: 'Lexend',
                         color: Styles.primaryColor,
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.2,
                       ),
                     ),
                   ),
                 ),
-              ),
-              
-              SizedBox(height: isMobile ? 24 : 32),
-              
-              // Submit Button
-              _buildAnimatedField(
-                delay: 400,
-                child: Consumer<AuthProvider>(
+                
+                const SizedBox(height: 32),
+                
+                // Sign In Button
+                Consumer<AuthProvider>(
                   builder: (context, authProvider, child) {
                     return _buildSignInButton(
                       context: context,
@@ -339,7 +491,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                       ),
                                     ),
                                     description: const Text(
-                                      'Welcome!',
+                                      'Welcome back!',
                                       style: TextStyle(
                                         fontSize: 15,
                                         color: Colors.teal,
@@ -387,41 +539,22 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                     );
                   },
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAnimatedField({
-    required int delay,
-    required Widget child,
-  }) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: Duration(milliseconds: 400 + delay),
-      curve: Curves.easeOut,
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 10 * (1 - value)),
-            child: child,
-          ),
-        );
-      },
-      child: child,
-    );
-  }
-
-  Widget _buildTextField({
+  Widget _buildModernTextField({
     required String label,
     required String hint,
     required TextEditingController? controller,
     required String? Function(String?)? validator,
     required IconData icon,
+    FocusNode? focusNode,
+    FocusNode? nextFocus,
     bool isPassword = false,
     Widget? suffix,
     TextInputType keyboardType = TextInputType.text,
@@ -433,56 +566,74 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           label,
           style: TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             color: Styles.tertiaryColor,
             fontFamily: 'Lexend',
-            letterSpacing: 0.2,
+            letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         TextFormField(
           controller: controller,
           obscureText: isPassword,
           validator: validator,
+          focusNode: focusNode,
           keyboardType: keyboardType,
+          textInputAction: nextFocus != null ? TextInputAction.next : TextInputAction.done,
+          onFieldSubmitted: (_) {
+            if (nextFocus != null) {
+              nextFocus.requestFocus();
+            }
+          },
           style: TextStyle(
             color: Styles.tertiaryColor,
             fontFamily: 'Lexend',
             fontSize: 15,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.w500,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
               color: Colors.grey[400],
               fontFamily: 'Lexend',
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: FontWeight.w400,
             ),
-            prefixIcon: Icon(
-              icon,
-              color: Styles.primaryColor,
-              size: 20,
+            prefixIcon: Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Styles.primaryColor.withOpacity(0.1),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                ),
+              ),
+              child: Icon(
+                icon,
+                color: Styles.primaryColor,
+                size: 20,
+              ),
             ),
             suffixIcon: suffix,
             filled: true,
             fillColor: Colors.grey[50],
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
+              horizontal: 0,
+              vertical: 18,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Colors.grey[300]!,
-                width: 1.5,
+                color: Colors.grey[200]!,
+                width: 2,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Colors.grey[300]!,
-                width: 1.5,
+                color: Colors.grey[200]!,
+                width: 2,
               ),
             ),
             focusedBorder: OutlineInputBorder(
@@ -496,7 +647,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: Colors.redAccent,
-                width: 1.5,
+                width: 2,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
@@ -523,37 +674,37 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     required bool isLoading,
     required VoidCallback? onTap,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
+    return Container(
+      height: 58,
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: LinearGradient(
-              colors: [
-                Styles.primaryColor,
-                Styles.secondaryColor,
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Styles.primaryColor.withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
+        gradient: LinearGradient(
+          colors: [
+            Styles.primaryColor,
+            Styles.secondaryColor,
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Styles.primaryColor.withOpacity(0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
           child: Container(
-            height: 54,
             alignment: Alignment.center,
             child: isLoading
                 ? const SizedBox(
-                    height: 22,
-                    width: 22,
+                    height: 24,
+                    width: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -567,16 +718,23 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                         style: TextStyle(
                           color: Colors.white,
                           fontFamily: 'Lexend',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.arrow_forward_rounded,
-                        color: Colors.white,
-                        size: 20,
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_forward_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                     ],
                   ),
