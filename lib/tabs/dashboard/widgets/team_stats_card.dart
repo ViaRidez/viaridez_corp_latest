@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../../../../utils/styles.dart';
 
 class TeamStatsCard extends StatelessWidget {
@@ -236,7 +237,7 @@ class TeamStatsCard extends StatelessWidget {
     try {
       final dio = Dio();
       final response = await dio
-          .get('https://uat.viaridez.com/api/route/api/dashboard/counts');
+          .get('${AppConfig.apiBaseUrl}/route/api/dashboard/counts');
 
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;

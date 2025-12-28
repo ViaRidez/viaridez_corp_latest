@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import 'pax_model.dart';
 
 class PaxService {
-  static const String baseUrl = 'https://uat.viaridez.com/api';
   final Dio _dio;
 
   PaxService() : _dio = Dio() {
@@ -11,7 +11,7 @@ class PaxService {
 
   void _configureDio() {
     _dio.options = BaseOptions(
-      baseUrl: baseUrl,
+      baseUrl: AppConfig.apiBaseUrl,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       sendTimeout: const Duration(seconds: 30),
@@ -23,7 +23,7 @@ class PaxService {
   }
 
   /// Get passengers by client name
-  /// GET: https://uat.viaridez.com/api/client?clientName={clientName}
+  /// GET: {apiBaseUrl}/client?clientName={clientName}
   Future<List<PaxModel>> getPassengersByClient(String clientName) async {
     try {
       if (clientName.trim().isEmpty) {

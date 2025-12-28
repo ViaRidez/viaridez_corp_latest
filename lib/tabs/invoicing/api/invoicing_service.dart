@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../models/invoicing_model.dart';
 
 class InvoicingService {
   final Dio _dio = Dio();
-  static const String baseUrl = 'https://uat.viaridez.com/api';
 
   InvoicingService() {
     _dio.options = BaseOptions(
-      baseUrl: baseUrl,
+      baseUrl: AppConfig.apiBaseUrl,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {

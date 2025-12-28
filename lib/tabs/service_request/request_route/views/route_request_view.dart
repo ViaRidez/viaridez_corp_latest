@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../../../../auth/provider/auth_provider.dart';
 import '../../../../utils/styles.dart';
 import '../../../../widgets/location_picker.dart';
@@ -616,7 +617,7 @@ class _RouteRequestViewState extends State<RouteRequestView> {
           ),
           children: [
             TileLayer(
-              urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              urlTemplate: AppConfig.osmTileUrlWithSubdomain,
               subdomains: const ['a', 'b', 'c'],
               userAgentPackageName: 'com.viaridez.app',
             ),

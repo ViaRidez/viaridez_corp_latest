@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../../../utils/styles.dart';
 import '../model/pit_stop.dart';
 import '../model/route_model.dart';
@@ -366,7 +367,7 @@ class RouteDetailsDialog extends StatelessWidget {
                 children: [
                   // Map tiles
                   TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    urlTemplate: AppConfig.osmTileUrl,
                     userAgentPackageName: 'com.viaridez.corp',
                     maxZoom: 19,
                   ),

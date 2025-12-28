@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:viaridez_corp/tabs/service_request/request_trip/services/pax_provider.dart';
 
@@ -36,6 +37,10 @@ void setupLogging() {
 void main() async {
   setupLogging();
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+
   // await ChatNotificationService.initialize();
   // await Firebase.initializeApp(
   //   options: DefaultFirebaseOptions.currentPlatform,

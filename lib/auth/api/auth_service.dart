@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 
 import '../model/corp_auth_model.dart';
 import 'secure_tokens.dart';
@@ -9,7 +10,7 @@ class AuthService {
   final _logger = Logger('OptAuthService');
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://uat.viaridez.com/api',
+      baseUrl: AppConfig.apiBaseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       headers: {'Content-Type': 'application/json'},

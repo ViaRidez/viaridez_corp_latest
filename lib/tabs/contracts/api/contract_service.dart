@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
 import 'dart:typed_data';
+import 'package:viaridez_corp/config/app_config.dart';
 
 class ContractService {
-  final String baseUrl = 'https://uat.viaridez.com/api';
   late final Dio _dio;
 
   ContractService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
+        baseUrl: AppConfig.apiBaseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         headers: {

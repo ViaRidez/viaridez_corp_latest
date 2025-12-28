@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../model/staff_modal.dart';
 
 class StaffService {
   late final Dio _dio;
-  static const String _defaultBaseUrl = 'https://uat.viaridez.com';
 
   StaffService({String? baseUrl}) {
     _dio = Dio(BaseOptions(
-      baseUrl: baseUrl ?? _defaultBaseUrl,
+      baseUrl: baseUrl ?? AppConfig.apiBaseUrlNoApi,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       sendTimeout: const Duration(seconds: 30),

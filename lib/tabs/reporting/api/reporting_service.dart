@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../models/models.dart';
 
 class ReportingService {
   final Dio _dio;
-  static const String baseUrl = 'https://uat.viaridez.com/api';
 
   ReportingService({Dio? dio}) : _dio = dio ?? Dio() {
-    _dio.options.baseUrl = baseUrl;
+    _dio.options.baseUrl = AppConfig.apiBaseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
 

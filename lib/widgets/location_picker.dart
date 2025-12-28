@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
+import 'package:viaridez_corp/config/app_config.dart';
 import '../utils/styles.dart';
 import 'location_service.dart';
 
@@ -196,7 +197,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
     try {
       final response = await http.get(
         Uri.parse(
-          'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&limit=5&addressdetails=1',
+          AppConfig.getNominatimSearchUrl(query),
         ),
         headers: {
           'Accept': 'application/json',
@@ -264,7 +265,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
     try {
       final response = await http.get(
         Uri.parse(
-          'https://nominatim.openstreetmap.org/reverse?lat=$lat&lon=$lng&format=json&addressdetails=1',
+          AppConfig.getNominatimReverseUrlWithCoords(lat, lng),
         ),
         headers: {
           'Accept': 'application/json',
@@ -317,8 +318,10 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
       final position = await LocationService.getCurrentPosition();
 
       // Reverse geocode to get address
-      final url =
-          'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=18&addressdetails=1';
+      final url = AppConfig.getNominatimReverseUrlFull(
+        position.latitude,
+        position.longitude,
+      );
       final response = await http.get(Uri.parse(url));
 
       String address = 'Current Location';
@@ -568,8 +571,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                         ),
                         children: [
                           TileLayer(
-                            urlTemplate:
-                                'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            urlTemplate: AppConfig.osmTileUrlWithSubdomain,
                             subdomains: const ['a', 'b', 'c'],
                           ),
                           MarkerLayer(

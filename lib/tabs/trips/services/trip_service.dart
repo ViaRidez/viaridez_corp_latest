@@ -1,16 +1,16 @@
 import 'package:dio/dio.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../models/trip_model.dart';
 
 class TripService {
   static final Dio _dio = Dio();
-  static const String baseUrl = 'https://uat.viaridez.com/api';
 
   static Future<List<TripModel>> getClientTrips({
     required String clientName,
     String? status,
   }) async {
     try {
-      String url = '$baseUrl/trip/trips/client/$clientName';
+      String url = '${AppConfig.apiBaseUrl}/trip/trips/client/$clientName';
       if (status != null && status.isNotEmpty) {
         url += '?status=$status';
       } else {

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../model/route_requested_model.dart';
 
 enum RouteAddResult {
@@ -11,7 +12,7 @@ enum RouteAddResult {
 class B2bRouteService {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://uat.viaridez.com/api',
+      baseUrl: AppConfig.apiBaseUrl,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'multipart/form-data'},
@@ -115,7 +116,7 @@ class B2bRouteService {
       // Create a new Dio instance with application/json headers for GET request
       final getDio = Dio(
         BaseOptions(
-          baseUrl: 'https://uat.viaridez.com/api',
+          baseUrl: AppConfig.apiBaseUrl,
           connectTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),
           headers: {'Content-Type': 'application/json'},

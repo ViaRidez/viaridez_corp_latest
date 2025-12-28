@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../models/quotations_model.dart';
 
 class QuotationsService {
-  final String baseUrl = 'https://uat.viaridez.com/api';
   late final Dio _dio;
 
   QuotationsService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
+        baseUrl: AppConfig.apiBaseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         headers: {

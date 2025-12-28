@@ -1,13 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../../../auth/api/secure_tokens.dart';
 
 class DashboardService {
-  static const String _baseUrl = 'https://uat.viaridez.com/api';
-
   final Dio _dio;
 
   DashboardService() : _dio = Dio() {
-    _dio.options.baseUrl = _baseUrl;
+    _dio.options.baseUrl = AppConfig.apiBaseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 10);
     _dio.options.receiveTimeout = const Duration(seconds: 10);
 

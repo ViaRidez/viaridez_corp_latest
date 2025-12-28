@@ -74,6 +74,7 @@ dependencies:
   path_provider: ^2.1.2
   open_file: ^3.3.2
   syncfusion_flutter_charts: ^28.2.9
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_lints: ^4.0.0
@@ -107,6 +108,7 @@ flutter:
     - assets/homepage/aboutUs/
     - assets/homepage/faces/
     - assets/coming_soon.svg
+    - .env
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
   # For details regarding adding assets from package dependencies, see

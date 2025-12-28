@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:math' as math;
+import 'package:viaridez_corp/config/app_config.dart';
 
 /// Exception thrown when location operations fail
 class LocationException implements Exception {
@@ -217,7 +218,7 @@ class LocationService {
       double latitude, double longitude) async {
     try {
       // OpenStreetMap Nominatim reverse geocoding API
-      final url = 'https://nominatim.openstreetmap.org/reverse'
+      final url = '${AppConfig.osmNominatimBaseUrl}/reverse'
           '?format=json'
           '&lat=$latitude'
           '&lon=$longitude'

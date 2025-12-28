@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../models/invoices_model.dart';
 import '../../../auth/api/secure_tokens.dart';
 
 class InvoicesService {
   static final Dio _dio = Dio();
-  static const String _baseUrl = 'https://uat.viaridez.com/api';
 
   // Get invoices for a specific client using client name from secure storage
   static Future<List<InvoiceModel>> getClientInvoices() async {
@@ -17,10 +17,10 @@ class InvoicesService {
       }
 
       print(
-          'InvoicesService: Making API call to $_baseUrl/trip/client/invoice/$clientName');
+          'InvoicesService: Making API call to ${AppConfig.apiBaseUrl}/trip/client/invoice/$clientName');
 
       final response =
-          await _dio.get('$_baseUrl/trip/client/invoice/$clientName');
+          await _dio.get('${AppConfig.apiBaseUrl}/trip/client/invoice/$clientName');
 
       print(
           'InvoicesService: Received response with status code: ${response.statusCode}');

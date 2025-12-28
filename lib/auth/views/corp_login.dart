@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -90,7 +91,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate: AppConfig.osmTileUrlWithSubdomain,
                 subdomains: const ['a', 'b', 'c'],
                 userAgentPackageName: 'com.example.app',
               ),

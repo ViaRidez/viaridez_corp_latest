@@ -1,16 +1,16 @@
 import 'package:dio/dio.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../models/journey_model.dart';
 
 enum TripAddResult { success, error, invalidData }
 
 class B2bTripPlanningService {
-  final String baseUrl = 'https://uat.viaridez.com/api';
   late final Dio _dio;
 
   B2bTripPlanningService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
+        baseUrl: AppConfig.apiBaseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         headers: {

@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../models/route_model.dart';
 
 class RouteService {
-  final String baseUrl = 'https://uat.viaridez.com/api';
   late final Dio _dio;
 
   RouteService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
+        baseUrl: AppConfig.apiBaseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         headers: {
@@ -23,7 +23,7 @@ class RouteService {
   }
 
   /// Get routes by client name
-  /// GET: https://uat.viaridez.com/api/route/api/reports/route-trips?clientName=CHT
+  /// GET: {apiBaseUrl}/route/api/reports/route-trips?clientName={clientName}
   Future<List<RouteModel>> getRoutesByClient(String clientName) async {
     try {
       final response = await _dio.get(

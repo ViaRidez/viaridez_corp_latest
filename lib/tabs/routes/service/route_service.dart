@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
+import 'package:viaridez_corp/config/app_config.dart';
 import '../model/route_model.dart';
 
 class RouteService {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://uat.viaridez.com/api',
+      baseUrl: AppConfig.apiBaseUrl,
       connectTimeout: Duration(seconds: 10),
       receiveTimeout: Duration(seconds: 10),
     ),
