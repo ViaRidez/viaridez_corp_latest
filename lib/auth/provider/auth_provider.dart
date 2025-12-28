@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../api/auth_service.dart';
 import '../api/secure_tokens.dart';
+import '../api/storage_helper.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -13,7 +13,6 @@ class AuthProvider with ChangeNotifier {
   String? _clientName;
   String? _keycloakUserId;
   String? _databaseUserId;
-  final _storage = const FlutterSecureStorage();
 
   String _username = '';
 
@@ -55,12 +54,12 @@ class AuthProvider with ChangeNotifier {
   Future<void> _initializeAuth() async {
     if (!_mounted) return;
     try {
-      final storedToken = await _storage.read(key: _tokenKey);
-      final storedLoginState = await _storage.read(key: _isLoggedInKey);
-      final storedClientName = await _storage.read(key: _clientNameKey);
-      final storedUsername = await _storage.read(key: _usernameKey);
-      final storedKeycloakUserId = await _storage.read(key: _keycloakUserIdKey);
-      final storedDatabaseUserId = await _storage.read(key: _databaseUserIdKey);
+      final storedToken = await StorageHelper.read(key: _tokenKey);
+      final storedLoginState = await StorageHelper.read(key: _isLoggedInKey);
+      final storedClientName = await StorageHelper.read(key: _clientNameKey);
+      final storedUsername = await StorageHelper.read(key: _usernameKey);
+      final storedKeycloakUserId = await StorageHelper.read(key: _keycloakUserIdKey);
+      final storedDatabaseUserId = await StorageHelper.read(key: _databaseUserIdKey);
 
       if (!_mounted) return;
 
@@ -96,13 +95,13 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> _clearStoredData() async {
     await Future.wait([
-      _storage.delete(key: _tokenKey),
-      _storage.delete(key: _isLoggedInKey),
-      _storage.delete(key: _usernameKey),
-      _storage.delete(key: 'email'),
-      _storage.delete(key: _clientNameKey),
-      _storage.delete(key: _keycloakUserIdKey),
-      _storage.delete(key: _databaseUserIdKey),
+      StorageHelper.delete(key: _tokenKey),
+      StorageHelper.delete(key: _isLoggedInKey),
+      StorageHelper.delete(key: _usernameKey),
+      StorageHelper.delete(key: 'email'),
+      StorageHelper.delete(key: _clientNameKey),
+      StorageHelper.delete(key: _keycloakUserIdKey),
+      StorageHelper.delete(key: _databaseUserIdKey),
       deleteTokens(),
     ]);
   }
@@ -139,13 +138,13 @@ class AuthProvider with ChangeNotifier {
         print("keycloakUserId: $_keycloakUserId");
 
         await Future.wait([
-          _storage.write(key: _tokenKey, value: result.token),
-          _storage.write(key: _isLoggedInKey, value: 'true'),
-          _storage.write(key: _usernameKey, value: _username),
-          _storage.write(key: 'email', value: result.email),
-          _storage.write(key: _clientNameKey, value: _clientName ?? ''),
+          StorageHelper.write(key: _tokenKey, value: result.token!),
+          StorageHelper.write(key: _isLoggedInKey, value: 'true'),
+          StorageHelper.write(key: _usernameKey, value: _username),
+          StorageHelper.write(key: 'email', value: result.email!),
+          StorageHelper.write(key: _clientNameKey, value: _clientName ?? ''),
           if (result.keycloakUserId != null)
-            _storage.write(key: _keycloakUserIdKey, value: result.keycloakUserId),
+            StorageHelper.write(key: _keycloakUserIdKey, value: result.keycloakUserId!),
           saveTokens({
             "token": result.token,
             "username": _username,

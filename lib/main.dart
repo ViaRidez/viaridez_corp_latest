@@ -38,8 +38,13 @@ void main() async {
   setupLogging();
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables
-  await dotenv.load(fileName: ".env");
+  // Load environment variables - don't crash if file is missing
+  try {
+    await dotenv.load(fileName: ".env");
+    print("✅ .env file loaded");
+  } catch (e) {
+    print("⚠️ .env file not found, using defaults");
+  }
 
   // await ChatNotificationService.initialize();
   // await Firebase.initializeApp(
