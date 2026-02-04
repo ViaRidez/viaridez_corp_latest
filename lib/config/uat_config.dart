@@ -1,6 +1,6 @@
 class UATConfig {
   // Controls whether UAT banner is shown
-  static const bool showUATBanner = false;
+  static const bool showUATBanner = true;
 
   // UAT banner message for different screen sizes
   static const String fullMessage =
