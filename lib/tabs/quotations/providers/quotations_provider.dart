@@ -26,14 +26,13 @@ class QuotationsProvider with ChangeNotifier {
         0.0, (sum, quotation) => sum + quotation.totalPrice);
   }
 
-  /// Load quotations for the current client filter
+  /// Load all quotations
   Future<void> loadQuotations() async {
     _setLoading(true);
     _setError(null);
 
     try {
-      final quotations =
-          await _quotationsService.getQuotationsByClient(_currentClientFilter);
+      final quotations = await _quotationsService.getAllQuotations();
       _quotations = quotations;
 
       // Sort by creation date (newest first)

@@ -121,13 +121,14 @@ class _DashboardViewState extends State<DashboardView> {
           child: Column(
             children: [
               // Team Stats Card at the top - full width horizontal
-              // Container(
-              //   width: double.infinity,
-              //   margin: EdgeInsets.only(bottom: _getResponsiveSpacing(context)),
-              //   child: TeamStatsCard(
-              //     dashboardCounts: dashboardProvider.dashboardCounts,
-              //   ),
-              // ),
+              if (dashboardProvider.dashboardCounts != null)
+                Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.only(bottom: _getResponsiveSpacing(context)),
+                  child: TeamStatsCard(
+                    dashboardCounts: dashboardProvider.dashboardCounts,
+                  ),
+                ),
 
               // Rest of the cards in grid layout
               GridView.count(
@@ -203,8 +204,8 @@ class _DashboardViewState extends State<DashboardView> {
         provider.completedTrips.isNotEmpty ||
         provider.pendingTrips.isNotEmpty ||
         provider.unallocatedTrips.isNotEmpty ||
-        provider.cancelledTrips.isNotEmpty;
-    // || provider.dashboardCounts != null;
+        provider.cancelledTrips.isNotEmpty ||
+        provider.dashboardCounts != null;
   }
 
   Widget _buildEmptyState(DashboardProvider provider) {

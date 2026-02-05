@@ -20,7 +20,24 @@ class TripService {
       final response = await _dio.get(url);
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
+        // Handle response as Map with data field or direct List
+        List<dynamic> data;
+
+        if (response.data is Map<String, dynamic>) {
+          // API returns { "status": 200, "data": [...], ... }
+          final mapData = response.data as Map<String, dynamic>;
+          data = mapData['data'] as List<dynamic>? ?? [];
+        } else if (response.data is List) {
+          // API returns direct list
+          data = response.data as List<dynamic>;
+        } else {
+          return [];
+        }
+
+        if (data.isEmpty) {
+          return [];
+        }
+
         return data.map((json) {
           try {
             return TripModel.fromJson(json);

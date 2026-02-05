@@ -28,16 +28,45 @@ class InvoicesService {
           'InvoicesService: Response data type: ${response.data.runtimeType}');
 
       if (response.statusCode == 200) {
-        final List<dynamic> invoicesJson = response.data;
-        print(
-            'InvoicesService: Parsing ${invoicesJson.length} invoice records for client: $clientName');
+        // Handle different response types
+        if (response.data is String) {
+          // API returns a string message when no invoices found
+          print('InvoicesService: No invoices found - ${response.data}');
+          return [];
+        }
 
-        final invoices =
-            invoicesJson.map((json) => InvoiceModel.fromJson(json)).toList();
+        if (response.data is Map<String, dynamic>) {
+          // API returns a map with data field
+          final mapData = response.data as Map<String, dynamic>;
+          if (mapData.containsKey('data') && mapData['data'] is List) {
+            final List<dynamic> invoicesJson = mapData['data'];
+            return invoicesJson
+                .map((json) => InvoiceModel.fromJson(json))
+                .toList();
+          }
+          // No data field or empty
+          return [];
+        }
 
-        print(
-            'InvoicesService: Successfully parsed ${invoices.length} invoices');
-        return invoices;
+        if (response.data is List) {
+          final List<dynamic> invoicesJson = response.data;
+          print(
+              'InvoicesService: Parsing ${invoicesJson.length} invoice records for client: $clientName');
+
+          if (invoicesJson.isEmpty) {
+            return [];
+          }
+
+          final invoices =
+              invoicesJson.map((json) => InvoiceModel.fromJson(json)).toList();
+
+          print(
+              'InvoicesService: Successfully parsed ${invoices.length} invoices');
+          return invoices;
+        }
+
+        // Unknown response format
+        return [];
       } else {
         throw Exception('Failed to load invoices: ${response.statusCode}');
       }

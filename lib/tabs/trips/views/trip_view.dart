@@ -68,20 +68,43 @@ class _TripViewState extends State<TripView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isSmallScreen = constraints.maxWidth < 600;
-        final isMediumScreen = constraints.maxWidth >= 600 && constraints.maxWidth < 1000;
+        final isMediumScreen =
+            constraints.maxWidth >= 600 && constraints.maxWidth < 1000;
 
-        double titleFont = isSmallScreen ? 20 : isMediumScreen ? 24 : 28;
+        double titleFont = isSmallScreen
+            ? 20
+            : isMediumScreen
+                ? 24
+                : 28;
         EdgeInsets titlePad = isSmallScreen
             ? const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
             : const EdgeInsets.all(24);
 
         final statusCards = [
-          _buildStatusCard('All Trips', provider.trips.length, null, provider.selectedStatus == null, provider),
-          _buildStatusCard('Unallocated', provider.unallocatedCount, TripStatus.unallocated, provider.selectedStatus == TripStatus.unallocated, provider),
-          _buildStatusCard('Ongoing', provider.ongoingCount, TripStatus.ongoing, provider.selectedStatus == TripStatus.ongoing, provider),
-          _buildStatusCard('Pending', provider.pendingCount, TripStatus.pending, provider.selectedStatus == TripStatus.pending, provider),
-          _buildStatusCard('Completed', provider.completedCount, TripStatus.completed, provider.selectedStatus == TripStatus.completed, provider),
-          _buildStatusCard('Cancelled', provider.cancelledCount, TripStatus.cancel, provider.selectedStatus == TripStatus.cancel, provider),
+          _buildStatusCard('All Trips', provider.trips.length, null,
+              provider.selectedStatus == null, provider),
+          _buildStatusCard(
+              'Unallocated',
+              provider.unallocatedCount,
+              TripStatus.unallocated,
+              provider.selectedStatus == TripStatus.unallocated,
+              provider),
+          _buildStatusCard('Ongoing', provider.ongoingCount, TripStatus.ongoing,
+              provider.selectedStatus == TripStatus.ongoing, provider),
+          _buildStatusCard('Pending', provider.pendingCount, TripStatus.pending,
+              provider.selectedStatus == TripStatus.pending, provider),
+          _buildStatusCard(
+              'Completed',
+              provider.completedCount,
+              TripStatus.completed,
+              provider.selectedStatus == TripStatus.completed,
+              provider),
+          _buildStatusCard(
+              'Cancelled',
+              provider.cancelledCount,
+              TripStatus.cancel,
+              provider.selectedStatus == TripStatus.cancel,
+              provider),
         ];
 
         return Container(
@@ -109,132 +132,151 @@ class _TripViewState extends State<TripView> {
               // Status Filter Cards - Responsive
               isSmallScreen
                   ? SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: statusCards
-                      .map((card) => Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: SizedBox(width: 140, child: card),
-                  ))
-                      .toList(),
-                ),
-              )
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: statusCards
+                            .map((card) => Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: SizedBox(width: 140, child: card),
+                                ))
+                            .toList(),
+                      ),
+                    )
                   : Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: statusCards
-                    .map((card) => SizedBox(
-                  width: isMediumScreen
-                      ? (constraints.maxWidth / 3 - 16).clamp(150.0, 250.0)
-                      : (constraints.maxWidth / 6 - 20).clamp(150.0, double.infinity),
-                  child: card,
-                ))
-                    .toList(),
-              ),
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: statusCards
+                          .map((card) => SizedBox(
+                                width: isMediumScreen
+                                    ? (constraints.maxWidth / 3 - 16)
+                                        .clamp(150.0, 250.0)
+                                    : (constraints.maxWidth / 6 - 20)
+                                        .clamp(150.0, double.infinity),
+                                child: card,
+                              ))
+                          .toList(),
+                    ),
 
               SizedBox(height: isSmallScreen ? 12 : 20),
 
               // Search Row - Responsive
               isSmallScreen
                   ? Column(
-                children: [
-                  Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (value) => provider.searchTrips(value),
-                      decoration: InputDecoration(
-                        hintText: 'Search trips by ID, destination, driver, vehicle...',
-                        hintStyle: TextStyles.hintText.copyWith(fontSize: 14),
-                        prefixIcon: Icon(Icons.search, color: Styles.primaryColor),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                          icon: Icon(Icons.clear, color: Styles.primaryColor),
-                          onPressed: () {
-                            _searchController.clear();
-                            provider.searchTrips('');
-                          },
-                        )
-                            : null,
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        _searchController.clear();
-                        provider.clearFilters();
-                      },
-                      icon: const Icon(Icons.refresh, color: Colors.white),
-                      label: Text('Clear Filters', style: TextStyles.primaryButtonText),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Styles.secondaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                  ),
-                ],
-              )
-                  : Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (value) => provider.searchTrips(value),
-                        decoration: InputDecoration(
-                          hintText: 'Search trips by ID, destination, driver, vehicle...',
-                          hintStyle: TextStyles.hintText.copyWith(fontSize: 14),
-                          prefixIcon: Icon(Icons.search, color: Styles.primaryColor),
-                          suffixIcon: _searchController.text.isNotEmpty
-                              ? IconButton(
-                            icon: Icon(Icons.clear, color: Styles.primaryColor),
+                      children: [
+                        Container(
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (value) => provider.searchTrips(value),
+                            decoration: InputDecoration(
+                              hintText:
+                                  'Search trips by ID, destination, driver, vehicle...',
+                              hintStyle:
+                                  TextStyles.hintText.copyWith(fontSize: 14),
+                              prefixIcon: Icon(Icons.search,
+                                  color: Styles.primaryColor),
+                              suffixIcon: _searchController.text.isNotEmpty
+                                  ? IconButton(
+                                      icon: Icon(Icons.clear,
+                                          color: Styles.primaryColor),
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        provider.searchTrips('');
+                                      },
+                                    )
+                                  : null,
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
                             onPressed: () {
                               _searchController.clear();
-                              provider.searchTrips('');
+                              provider.clearFilters();
                             },
-                          )
-                              : null,
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            icon:
+                                const Icon(Icons.refresh, color: Colors.white),
+                            label: Text('Clear Filters',
+                                style: TextStyles.primaryButtonText),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Styles.secondaryColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (value) => provider.searchTrips(value),
+                              decoration: InputDecoration(
+                                hintText:
+                                    'Search trips by ID, destination, driver, vehicle...',
+                                hintStyle:
+                                    TextStyles.hintText.copyWith(fontSize: 14),
+                                prefixIcon: Icon(Icons.search,
+                                    color: Styles.primaryColor),
+                                suffixIcon: _searchController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: Icon(Icons.clear,
+                                            color: Styles.primaryColor),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          provider.searchTrips('');
+                                        },
+                                      )
+                                    : null,
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            _searchController.clear();
+                            provider.clearFilters();
+                          },
+                          icon: const Icon(Icons.refresh, color: Colors.white),
+                          label: Text('Clear Filters',
+                              style: TextStyles.primaryButtonText),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Styles.secondaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      _searchController.clear();
-                      provider.clearFilters();
-                    },
-                    icon: const Icon(Icons.refresh, color: Colors.white),
-                    label: Text('Clear Filters', style: TextStyles.primaryButtonText),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Styles.secondaryColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         );
@@ -243,12 +285,12 @@ class _TripViewState extends State<TripView> {
   }
 
   Widget _buildStatusCard(
-      String title,
-      int count,
-      TripStatus? status,
-      bool isSelected,
-      TripProvider provider,
-      ) {
+    String title,
+    int count,
+    TripStatus? status,
+    bool isSelected,
+    TripProvider provider,
+  ) {
     // Define specific colors for each status
     Color getStatusColor() {
       if (status == null) return Styles.primaryColor; // All Trips
@@ -283,19 +325,19 @@ class _TripViewState extends State<TripView> {
           border: Border.all(color: borderColor, width: 2),
           boxShadow: isSelected
               ? [
-            BoxShadow(
-              color: statusColor.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ]
+                  BoxShadow(
+                    color: statusColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
               : [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
         ),
         child: Column(
           children: [
@@ -424,7 +466,7 @@ class _TripViewState extends State<TripView> {
                 backgroundColor: Styles.secondaryColor,
                 foregroundColor: Colors.white,
                 padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -609,7 +651,7 @@ class _TripViewState extends State<TripView> {
               decoration: BoxDecoration(
                 color: Styles.primaryColor,
                 borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(16)),
+                    const BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Row(
                 children: [

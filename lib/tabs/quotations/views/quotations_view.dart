@@ -15,7 +15,7 @@ class _QuotationsViewState extends State<QuotationsView> {
   @override
   void initState() {
     super.initState();
-    // Load quotations when the view is initialized
+    // Load all quotations when the view is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<QuotationsProvider>().loadQuotations();
     });
@@ -197,7 +197,7 @@ class _QuotationsViewState extends State<QuotationsView> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'No quotations available for ${provider.currentClientFilter}',
+                          'No quotations available',
                           style: TextStyle(
                             color: Colors.grey[500],
                           ),

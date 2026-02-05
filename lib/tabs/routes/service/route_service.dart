@@ -34,19 +34,35 @@ class RouteService {
       );
 
       if (response.statusCode == 200) {
-        // Check if response is a Map with a message (empty result case)
+        // Check if response is a Map with data field
         if (response.data is Map<String, dynamic>) {
-          final message = response.data['message'] ?? 'No routes found';
-          throw Exception(message);
+          final mapData = response.data as Map<String, dynamic>;
+
+          // Extract the data array from the response
+          if (mapData.containsKey('data') && mapData['data'] is List) {
+            final list = mapData['data'] as List;
+
+            // Return empty list if no data (this is not an error)
+            if (list.isEmpty) {
+              return [];
+            }
+
+            return list
+                .map((item) => RouteTripReportModel.fromJson(item))
+                .toList();
+          }
+
+          // If no data field, return empty list
+          return [];
         }
 
-        // Check if response is a List
+        // Check if response is a List directly
         if (response.data is List) {
           final list = response.data as List;
 
-          // Handle empty list
+          // Return empty list if no data (this is not an error)
           if (list.isEmpty) {
-            throw Exception('No reports found for this client in the given date range');
+            return [];
           }
 
           return list
