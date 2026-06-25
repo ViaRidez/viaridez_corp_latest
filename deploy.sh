@@ -1,12 +1,18 @@
 #!/bin/bash
 
-# Deployment script for viaRidez OPS Frontend to EC2 via AWS SSM
+# Deployment script for viaRidez CORP Frontend to EC2 via AWS SSM
 # Usage: ./deploy.sh [s3-bucket-name]
 # Example: ./deploy.sh my-deployment-bucket
 #
-# This script ONLY deploys to /ops path and does NOT affect /corp or /frontend
+# This script ONLY deploys to /corp path and does NOT affect /ops or /frontend
 
 set -e  # Exit on any error
+
+# Git Bash on Windows rewrites Unix-like paths (e.g. /corp/ → C:/Program Files/Git/corp/).
+# Disable that so --base-href and AWS SSM remote paths stay correct.
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+  export MSYS2_ARG_CONV_EXCL='*'
+fi
 
 # Configuration
 INSTANCE_ID="i-08cfb2c5607298892"
@@ -14,7 +20,7 @@ SERVER_USER="ubuntu"
 REMOTE_PATH="/var/www/viaridez-evtaar/viaRidez-frontend/corp"
 BUILD_PATH="build/web"
 S3_BUCKET="${1}"  # S3 bucket for temporary file transfer
-APP_NAME="viaridez-ops"
+APP_NAME="viaridez-corp"
 
 # Check if S3 bucket is provided
 if [ -z "$S3_BUCKET" ]; then
@@ -24,7 +30,7 @@ if [ -z "$S3_BUCKET" ]; then
     exit 1
 fi
 
-echo "Starting deployment to viaRidez OPS Frontend..."
+echo "Starting deployment to viaRidez CORP Frontend..."
 echo "Instance: $INSTANCE_ID"
 echo "S3 Bucket: $S3_BUCKET"
 echo "Remote Path: $REMOTE_PATH"
@@ -40,7 +46,7 @@ flutter pub get
 
 # Step 3: Build for web
 echo "Building Flutter web app..."
-flutter build web --release 
+flutter build web --release --base-href="/corp/"
 
 # Check if build was successful
 if [ ! -d "$BUILD_PATH" ]; then
@@ -66,12 +72,12 @@ echo "Uploading package to S3..."
 aws s3 cp "$DEPLOY_PACKAGE" "s3://${S3_BUCKET}/deployments/$DEPLOY_PACKAGE"
 echo "Uploaded to S3"
 
-# Step 6: Create backup on server (only for ops path)
+# Step 6: Create backup on server (only for corp path)
 echo "Creating backup on server..."
 aws ssm send-command \
     --instance-ids "$INSTANCE_ID" \
     --document-name "AWS-RunShellScript" \
-    --comment "Backup viaRidez OPS frontend" \
+    --comment "Backup viaRidez CORP frontend" \
     --parameters "commands=[
         'if [ -d $REMOTE_PATH ] && [ -n \"\$(ls -A $REMOTE_PATH 2>/dev/null)\" ]; then',
         '  sudo cp -r $REMOTE_PATH ${REMOTE_PATH}_backup_${TIMESTAMP}',
@@ -91,26 +97,26 @@ PRESIGNED_URL=$(aws s3 presign "s3://${S3_BUCKET}/deployments/${DEPLOY_PACKAGE}"
 
 echo "Deploying to server..."
 
-# Execute deployment using presigned URL (only affects /ops path)
+# Execute deployment using presigned URL (only affects /corp path)
 COMMAND_ID=$(aws ssm send-command \
     --instance-ids "$INSTANCE_ID" \
     --document-name "AWS-RunShellScript" \
-    --comment "Deploy viaRidez OPS frontend" \
+    --comment "Deploy viaRidez CORP frontend" \
     --parameters "commands=[
         'cd /tmp',
         'curl -f -o /tmp/${DEPLOY_PACKAGE} \"${PRESIGNED_URL}\"',
         'sudo mkdir -p ${REMOTE_PATH}',
-        'mkdir -p /tmp/viaridez_ops_deploy',
-        'cd /tmp/viaridez_ops_deploy',
+        'mkdir -p /tmp/viaridez_corp_deploy',
+        'cd /tmp/viaridez_corp_deploy',
         'tar -xzf /tmp/${DEPLOY_PACKAGE}',
         'sudo rm -rf ${REMOTE_PATH}/*',
         'sudo mv web/* ${REMOTE_PATH}/',
         'sudo chown -R ubuntu:www-data ${REMOTE_PATH}',
         'sudo chmod -R 755 ${REMOTE_PATH}',
         'cd /tmp',
-        'rm -rf /tmp/viaridez_ops_deploy',
+        'rm -rf /tmp/viaridez_corp_deploy',
         'rm -f /tmp/${DEPLOY_PACKAGE}',
-        'echo OPS Deployment complete!',
+        'echo CORP Deployment complete!',
         'ls -lah ${REMOTE_PATH} | head -10'
     ]" \
     --output text --query 'Command.CommandId')
@@ -167,6 +173,7 @@ done
 rm -f "$DEPLOY_PACKAGE"
 
 echo ""
-echo "corp Deployment completed successfully!"
+echo "CORP Deployment completed successfully!"
 echo "Deployed to: $REMOTE_PATH"
 echo ""
+ 

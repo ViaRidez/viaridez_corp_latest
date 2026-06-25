@@ -40,9 +40,10 @@ class RouteService {
             final routeJson = data[i] as Map<String, dynamic>;
             final route = RouteModel.fromJson(routeJson);
             routes.add(route);
-          } catch (e) {
-            // Skip this route and continue with others
-            continue;
+          } catch (e, s) {
+            print("Route parse error: $e");
+            // print(routeJson);
+            print(s);
           }
         }
 

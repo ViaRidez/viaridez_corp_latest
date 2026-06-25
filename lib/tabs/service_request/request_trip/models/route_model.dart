@@ -42,7 +42,8 @@ class RouteModel {
 
     return RouteModel(
       routeId: routeId,
-      routeName: json['routeName'] ?? 'Route $routeId',
+      routeName: json['routeName'] ??
+    'Route $routeId',
       startLocation: startLoc,
       endLocation: endLoc,
       routeType: _safeGetString(json['routeType'], ''),
@@ -53,7 +54,9 @@ class RouteModel {
       isShuttleServiceRoute: json['isShuttleServiceRoute'] ?? false,
       totalRequests: json['totalRequests'],
       totalDistanceKm: json['totalDistanceKm']?.toDouble(),
-      pitStops: json['pitStops'],
+      pitStops: (json['pitStops'] as List?)
+    ?.map((e) => e['name'].toString())
+    .join('|'),
     );
   }
 
