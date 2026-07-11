@@ -46,7 +46,7 @@ flutter pub get
 
 # Step 3: Build for web
 echo "Building Flutter web app..."
-flutter build web --release --base-href="/corp/"
+flutter build web --release --base-href="/"
 
 # Check if build was successful
 if [ ! -d "$BUILD_PATH" ]; then
