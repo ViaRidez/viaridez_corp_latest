@@ -1,45 +1,43 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+const String _env = String.fromEnvironment('ENV', defaultValue: 'uat');
 
-/// Application configuration class that loads environment variables
-/// This class provides centralized access to all environment-specific configuration
 class AppConfig {
-  // Safe helper to get env values without crashing
-  static String _getEnv(String key, String defaultValue) {
-    try {
-      return dotenv.env[key] ?? defaultValue;
-    } catch (e) {
-      return defaultValue;
-    }
-  }
+  AppConfig._();
 
-  // API Base URLs
-  static String get apiBaseUrl => _getEnv('API_BASE_URL', 'https://uat.viaridez.com/api');
-  static String get apiBaseUrlNoApi => _getEnv('API_BASE_URL_NO_API', 'https://uat.viaridez.com');
+  static const _configs = {
+    'uat': {
+      'apiBaseUrl':      'https://uat.opsrider.com/api',
+      'apiBaseUrlNoApi': 'https://uat.opsrider.com',
+    },
+    'production': {
+      'apiBaseUrl':      'https://uat.viaridez.com/api',
+      'apiBaseUrlNoApi': 'https://uat.viaridez.com',
+    },
+  };
 
-  // OpenStreetMap URLs
-  static String get osmNominatimBaseUrl => _getEnv('OSM_NOMINATIM_BASE_URL', 'https://nominatim.openstreetmap.org');
-  static String get osmTileUrl => _getEnv('OSM_TILE_URL', 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
-  static String get osmTileUrlWithSubdomain => _getEnv('OSM_TILE_URL_WITH_SUBDOMAIN', 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+  // ── Third-party URLs (same in all environments) ───────────────────────────
+  static const String osmNominatimBaseUrl        = 'https://nominatim.openstreetmap.org';
+  static const String osmTileUrl                 = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  static const String osmTileUrlWithSubdomain    = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
-  // Environment
-  static String get environment => _getEnv('ENVIRONMENT', 'uat');
-  static bool get isProduction => environment.toLowerCase() == 'production';
-  static bool get isUAT => environment.toLowerCase() == 'uat';
+  // ── Environment ───────────────────────────────────────────────────────────
+  static String get environment  => _env;
+  static bool   get isProduction => _env == 'production';
+  static bool   get isUAT        => _env == 'uat';
 
-  // Helper methods for common URL patterns
-  static String getNominatimReverseUrl() {
-    return '$osmNominatimBaseUrl/reverse';
-  }
+  // ── API URLs ──────────────────────────────────────────────────────────────
+  static String get apiBaseUrl      => _configs[_env]!['apiBaseUrl']!;
+  static String get apiBaseUrlNoApi => _configs[_env]!['apiBaseUrlNoApi']!;
 
-  static String getNominatimSearchUrl(String query) {
-    return '$osmNominatimBaseUrl/search?q=${Uri.encodeComponent(query)}&format=json&limit=5&addressdetails=1';
-  }
+  // ── Nominatim helper methods ──────────────────────────────────────────────
+  static String getNominatimReverseUrl() =>
+      '$osmNominatimBaseUrl/reverse';
 
-  static String getNominatimReverseUrlWithCoords(double lat, double lng) {
-    return '$osmNominatimBaseUrl/reverse?lat=$lat&lon=$lng&format=json&addressdetails=1';
-  }
+  static String getNominatimSearchUrl(String query) =>
+      '$osmNominatimBaseUrl/search?q=${Uri.encodeComponent(query)}&format=json&limit=5&addressdetails=1';
 
-  static String getNominatimReverseUrlFull(double lat, double lng) {
-    return '$osmNominatimBaseUrl/reverse?format=json&lat=$lat&lon=$lng&zoom=18&addressdetails=1';
-  }
+  static String getNominatimReverseUrlWithCoords(double lat, double lng) =>
+      '$osmNominatimBaseUrl/reverse?lat=$lat&lon=$lng&format=json&addressdetails=1';
+
+  static String getNominatimReverseUrlFull(double lat, double lng) =>
+      '$osmNominatimBaseUrl/reverse?format=json&lat=$lat&lon=$lng&zoom=18&addressdetails=1';
 }

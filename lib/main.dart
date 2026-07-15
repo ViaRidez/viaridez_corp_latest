@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:viaridez_corp/tabs/service_request/request_trip/services/pax_provider.dart';
 
 import 'auth/provider/auth_provider.dart';
 import 'auth/views/corp_login.dart';
+import 'config/app_config.dart';
 import 'providers/tab_provider.dart';
 import 'tabs/contracts/providers/contract_provider.dart';
 import 'tabs/dashboard/providers/dashboard_provider.dart';
@@ -37,14 +37,6 @@ void setupLogging() {
 void main() async {
   setupLogging();
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Load environment variables - don't crash if file is missing
-  try {
-    await dotenv.load(fileName: ".env");
-    print("✅ .env file loaded");
-  } catch (e) {
-    print("⚠️ .env file not found, using defaults");
-  }
 
   // await ChatNotificationService.initialize();
   // await Firebase.initializeApp(
@@ -79,6 +71,7 @@ class MyApp extends StatelessWidget {
 
   // Helper method to wrap pages with UAT banner
   Widget _wrapWithUATBanner(Widget page) {
+    if (AppConfig.isProduction) return page;
     return UATBanner(child: page);
   }
 
