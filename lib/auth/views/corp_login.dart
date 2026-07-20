@@ -188,6 +188,9 @@ class AuthScreen extends StatelessWidget {
                                         alignment: Alignment.topCenter,
                                         title: Text(
                                           authProvider.errorMessage!,
+                                          softWrap: true,                    // ← add
+                                          maxLines: 5,                       // ← add
+                                          overflow: TextOverflow.ellipsis,   // ← add
                                           style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
@@ -205,8 +208,7 @@ class AuthScreen extends StatelessWidget {
                                             letterSpacing: 0.2,
                                           ),
                                         ),
-                                        autoCloseDuration:
-                                        const Duration(seconds: 2),
+                                        autoCloseDuration: const Duration(seconds: 2),
                                       );
                                     }
                                   }
