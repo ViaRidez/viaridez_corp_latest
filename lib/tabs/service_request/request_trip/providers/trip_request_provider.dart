@@ -7,7 +7,7 @@ enum TripSubmitStatus {
   initial,
   loading,
   success,
-  error,
+  error, idle,
 }
 
 class TripRequestProvider with ChangeNotifier {
@@ -102,6 +102,23 @@ class TripRequestProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void resetForm() {
+    // Clear controllers
+    tripStartDateTimeController.clear();
+    tripEndDateTimeController.clear();
+    shiftStartTimeController.clear();
+    noteController.clear();
+
+    // Reset state
+    tripStartDateTime = null;
+    tripEndDateTime = null;
+    shiftStartTime = null;
+    _selectedRoute = null;
+    _selectedPassengerIds = [];
+    _operatingDays = [];
+    _submitStatus = TripSubmitStatus.initial; // ← critical: reset status
+    notifyListeners();
+  }
   // Passenger selection methods
   void togglePassengerSelection(String passengerId) {
     if (_selectedPassengerIds.contains(passengerId)) {
@@ -149,9 +166,6 @@ class TripRequestProvider with ChangeNotifier {
         _submitStatus = TripSubmitStatus.success;
         _isLoading = false;
         notifyListeners();
-
-        // Reset form after successful submission
-        resetForm();
       } else if (result == TripAddResult.invalidData) {
         _submitStatus = TripSubmitStatus.error;
         _isLoading = false;
@@ -192,23 +206,6 @@ class TripRequestProvider with ChangeNotifier {
     }
 
     return true;
-  }
-
-  // Reset the form
-  void resetForm() {
-    noteController.clear();
-    tripStartDateTimeController.clear();
-    tripEndDateTimeController.clear();
-    shiftStartTimeController.clear();
-
-    _selectedRoute = null;
-    _selectedPassengerIds.clear();
-    _operatingDays.clear();
-
-    _submitStatus = TripSubmitStatus.initial;
-    _errorMessage = null;
-
-    notifyListeners();
   }
 
   @override

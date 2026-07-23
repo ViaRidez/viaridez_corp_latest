@@ -7,6 +7,7 @@ import '../../../../widgets/opt_large_textfield.dart';
 import '../../../../widgets/opt_textfield.dart';
 import '../providers/trip_request_provider.dart';
 import '../providers/route_provider.dart';
+import '../providers/trip_requested_provider.dart';
 import '../services/passenger_selection_widget.dart';
 import '../services/pax_provider.dart';
 import '../services/route_selection_widget.dart';
@@ -22,45 +23,59 @@ class _TripRequestViewState extends State<TripRequestView> {
   final _formKey = GlobalKey<FormState>();
   String? clientName;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Add listener for trip status changes
-    final tripProvider = Provider.of<TripRequestProvider>(context);
-    tripProvider.removeListener(_tripStatusListener); // Prevent duplicate
-    tripProvider.addListener(_tripStatusListener);
-  }
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   // Add listener for trip status changes
+  //   final tripProvider = Provider.of<TripRequestProvider>(context);
+  //   tripProvider.removeListener(_tripStatusListener); // Prevent duplicate
+  //   tripProvider.addListener(_tripStatusListener);
+  // }
+  //
+  // @override
+  // void dispose() {
+  //   final tripProvider =
+  //       Provider.of<TripRequestProvider>(context, listen: false);
+  //   tripProvider.removeListener(_tripStatusListener);
+  //   super.dispose();
+  // }
 
-  @override
-  void dispose() {
-    final tripProvider =
-        Provider.of<TripRequestProvider>(context, listen: false);
-    tripProvider.removeListener(_tripStatusListener);
-    super.dispose();
-  }
-
-  void _tripStatusListener() {
-    final tripProvider =
-        Provider.of<TripRequestProvider>(context, listen: false);
-    if (tripProvider.submitStatus == TripSubmitStatus.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Trip schedule successfully'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } else if (tripProvider.submitStatus == TripSubmitStatus.error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text(tripProvider.errorMessage ?? 'Failed to save trip schedule'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
+  // void _tripStatusListener() {
+  //   final tripProvider =
+  //   Provider.of<TripRequestProvider>(context, listen: false);
+  //
+  //   if (tripProvider.submitStatus == TripSubmitStatus.success) {
+  //     // 1. Refresh the list BEFORE popping (context still valid here)
+  //     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  //     Provider.of<TripRequestedProvider>(context, listen: false)
+  //         .fetchAllTrips(clientName: authProvider.clientName!);
+  //
+  //     // 2. Show snackbar BEFORE popping so ScaffoldMessenger context is valid
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Trip scheduled successfully'),
+  //         backgroundColor: Colors.green,
+  //         behavior: SnackBarBehavior.floating,
+  //       ),
+  //     );
+  //
+  //     // 3. Reset the form state
+  //     tripProvider.resetForm();
+  //
+  //     // 4. Close the dialog last
+  //     Navigator.of(context).pop();
+  //
+  //   } else if (tripProvider.submitStatus == TripSubmitStatus.error) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text(
+  //             tripProvider.errorMessage ?? 'Failed to save trip schedule'),
+  //         backgroundColor: Colors.red,
+  //         behavior: SnackBarBehavior.floating,
+  //       ),
+  //     );
+  //   }
+  // }
   DateTime _combineDateAndShiftTime(DateTime baseDate, String shiftTime) {
     final parts = shiftTime.split(':');
     final hour = int.parse(parts[0]);
@@ -397,92 +412,99 @@ class _TripRequestViewState extends State<TripRequestView> {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            if (tripProvider.selectedPassengerIds.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text('Please select at least one passenger'),
-                                  backgroundColor: Colors.orange,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                              return;
-                            }
+                      onPressed: () async {                          // ← async
+                        if (!_formKey.currentState!.validate()) return;
 
-                            if (tripProvider.tripStartDateTime != null &&
-                                tripProvider.tripEndDateTime != null) {
-                              final start = tripProvider.tripStartDateTime!;
-                              final end = tripProvider.tripEndDateTime!;
+                        if (tripProvider.selectedPassengerIds.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: const Text('Please select at least one passenger'),
+                            backgroundColor: Colors.orange,
+                            behavior: SnackBarBehavior.floating,
+                          ));
+                          return;
+                        }
 
-                              
-                              if (end.isBefore(start)) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text(
-                                        'Trip End Date & Time cannot be before Trip Start Date & Time'),
-                                    backgroundColor: Colors.red,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                                return;
-                              }
+                        if (tripProvider.tripStartDateTime != null &&
+                            tripProvider.tripEndDateTime != null) {
+                          final start = tripProvider.tripStartDateTime!;
+                          final end = tripProvider.tripEndDateTime!;
 
-
-                              if (start.year == end.year &&
-                                  start.month == end.month &&
-                                  start.day == end.day) {
-                                final difference = end.difference(start).inMinutes;
-                                if (difference < 15) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Text(
-                                          'Trip End Time must be at least 15 minutes after Trip Start Time'),
-                                      backgroundColor: Colors.red,
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                  return;
-                                }
-                              }
-
-
-                              if (tripProvider.shiftStartTime != null) {
-                                final shiftDateTime = _combineDateAndShiftTime(
-                                  start, // same date
-                                  tripProvider.shiftStartTime!, // e.g. "08:30:00"
-                                );
-
-                                if (!shiftDateTime.isBefore(start)) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Text(
-                                          'Shift Start Time must be strictly before Trip Start Date & Time'),
-                                      backgroundColor: Colors.red,
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                  return;
-                                }
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text('Shift Start Time is required'),
-                                    backgroundColor: Colors.red,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                                return;
-                              }
-                            }
-
-                            tripProvider.submitTripData(clientName!);
+                          if (end.isBefore(start)) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                              content: Text('Trip End Date & Time cannot be before Trip Start Date & Time'),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                            ));
+                            return;
                           }
 
+                          if (start.year == end.year &&
+                              start.month == end.month &&
+                              start.day == end.day) {
+                            if (end.difference(start).inMinutes < 15) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                content: Text('Trip End Time must be at least 15 minutes after Trip Start Time'),
+                                backgroundColor: Colors.red,
+                                behavior: SnackBarBehavior.floating,
+                              ));
+                              return;
+                            }
+                          }
 
+                          if (tripProvider.shiftStartTime != null) {
+                            final shiftDateTime = _combineDateAndShiftTime(
+                              start,
+                              tripProvider.shiftStartTime!,
+                            );
+                            if (!shiftDateTime.isBefore(start)) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                content: Text('Shift Start Time must be strictly before Trip Start Date & Time'),
+                                backgroundColor: Colors.red,
+                                behavior: SnackBarBehavior.floating,
+                              ));
+                              return;
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                              content: Text('Shift Start Time is required'),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                            ));
+                            return;
+                          }
+                        }
 
+                        // ✅ Await the API call
+                        await tripProvider.submitTripData(clientName!);
 
-                        },
+                        if (!mounted) return;
+
+                        if (tripProvider.submitStatus == TripSubmitStatus.success) {
+                          // 1. Reset form
+                          tripProvider.resetForm();
+
+                          // 2. Refresh the list
+                          Provider.of<TripRequestedProvider>(context, listen: false)
+                              .fetchAllTrips(clientName: clientName!);
+
+                          // 3. Show snackbar
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            content: Text('Trip scheduled successfully'),
+                            backgroundColor: Colors.green,
+                            behavior: SnackBarBehavior.floating,
+                          ));
+
+                          // 4. Close dialog
+                          Navigator.of(context).pop();
+
+                        } else if (tripProvider.submitStatus == TripSubmitStatus.error) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(tripProvider.errorMessage ?? 'Failed to save trip'),
+                            backgroundColor: Colors.red,
+                            behavior: SnackBarBehavior.floating,
+                          ));
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Styles.primaryColor,
                         foregroundColor: Colors.white,

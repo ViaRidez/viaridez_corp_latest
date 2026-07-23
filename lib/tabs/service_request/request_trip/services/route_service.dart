@@ -29,48 +29,26 @@ class RouteService {
       final response = await _dio.get(
         '/route/api/reports/route-trips',
         queryParameters: {'clientName': clientName},
+        options: Options(responseType: ResponseType.json),
       );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        final List<RouteModel> routes = [];
+      if (response.statusCode == 200 && response.data != null) {
+        // ✅ Unwrap the envelope — API returns { "status": 200, "data": [...] }
+        final responseBody = response.data as Map<String, dynamic>;
 
-        for (int i = 0; i < data.length; i++) {
-          try {
-            final routeJson = data[i] as Map<String, dynamic>;
-            final route = RouteModel.fromJson(routeJson);
-            routes.add(route);
-          } catch (e, s) {
-            print("Route parse error: $e");
-            // print(routeJson);
-            print(s);
-          }
+        if (responseBody['data'] is List) {
+          return (responseBody['data'] as List)
+              .map((json) => RouteModel.fromJson(json as Map<String, dynamic>))
+              .toList();
+        } else {
+          print('Expected "data" key with List, got: ${responseBody['data']?.runtimeType}');
+          return [];
         }
-
-        return routes;
       } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          type: DioExceptionType.badResponse,
-          message: 'Failed to fetch routes: ${response.statusCode}',
-        );
+        throw Exception('Failed to load routes: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionTimeout) {
-        throw Exception(
-            'Connection timeout. Please check your internet connection.');
-      } else if (e.type == DioExceptionType.receiveTimeout) {
-        throw Exception('Server response timeout. Please try again.');
-      } else if (e.type == DioExceptionType.badResponse) {
-        final statusCode = e.response?.statusCode;
-        if (statusCode == 404) {
-          throw Exception('No routes found for client: $clientName');
-        }
-        throw Exception('Server error ($statusCode). Please try again later.');
-      } else {
-        throw Exception('Network error. Please check your connection.');
-      }
+      throw Exception('Network error: ${e.message}');
     } catch (e) {
       throw Exception('An unexpected error occurred: $e');
     }
