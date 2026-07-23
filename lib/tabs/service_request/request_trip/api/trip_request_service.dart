@@ -125,13 +125,15 @@ class B2bTripPlanningService {
       print('==============================');
 
       if (response.statusCode == 200 && response.data != null) {
-        if (response.data is List) {
-          return (response.data as List)
-              .map(
-                  (json) => JourneyModel.fromJson(json as Map<String, dynamic>))
+        // ✅ API returns { "status": 200, "data": [...] } — unwrap the list
+        final responseBody = response.data as Map<String, dynamic>;
+
+        if (responseBody['data'] is List) {
+          return (responseBody['data'] as List)
+              .map((json) => JourneyModel.fromJson(json as Map<String, dynamic>))
               .toList();
         } else {
-          print('Expected List but got: ${response.data.runtimeType}');
+          print('Expected "data" key with List, got: ${responseBody['data'].runtimeType}');
           return [];
         }
       } else {

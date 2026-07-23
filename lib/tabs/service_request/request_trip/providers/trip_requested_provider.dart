@@ -30,6 +30,9 @@ class TripRequestedProvider with ChangeNotifier {
 
     try {
       _allTrips = await _tripService.getJourneyStatuses(clientName);
+      if (_allTrips.isEmpty) {
+        _errorMessage = 'No trips found for $clientName';
+      }
       _applyFilters();
     } catch (e) {
       _errorMessage = e.toString();

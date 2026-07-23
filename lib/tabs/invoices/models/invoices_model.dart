@@ -11,8 +11,8 @@ class InvoiceModel {
   final double? pricePerSeat;
   final double? totalPrice;
   final String? tripRoute;
-  final String? tripStartTime;
-  final String? tripEndTime;
+  final String? tripStartTime; // stored as formatted string after parsing
+  final String? tripEndTime;   // stored as formatted string after parsing
   final String? generatedAt;
   final String clientName;
   final List<int> startDate;
@@ -71,20 +71,40 @@ class InvoiceModel {
     this.bookingGroupId,
   });
 
-  factory InvoiceModel.fromJson(Map<String, dynamic> json) {
-    // Parse generatedAt array to string
-    String? parsedGeneratedAt;
-    if (json['generatedAt'] != null && json['generatedAt'] is List) {
-      final dateArray = json['generatedAt'] as List;
-      if (dateArray.length >= 6) {
-        // Format: [year, month, day, hour, minute, second, nanosecond]
-        parsedGeneratedAt =
-            '${dateArray[0]}-${dateArray[1].toString().padLeft(2, '0')}-${dateArray[2].toString().padLeft(2, '0')} ${dateArray[3].toString().padLeft(2, '0')}:${dateArray[4].toString().padLeft(2, '0')}:${dateArray[5].toString().padLeft(2, '0')}';
-      }
-    } else {
-      parsedGeneratedAt = json['generatedAt']?.toString();
+  // ── Datetime array → String converter ────────────────────────────────────
+  //
+  // The API returns datetime values as integer arrays in two shapes:
+  //   • [year, month, day, hour, minute]               – trip start/end times
+  //   • [year, month, day, hour, minute, sec, nanos]   – generatedAt
+  //
+  // This helper handles both shapes (and plain strings for future-proofing).
+  static String? _parseDateTimeArray(dynamic raw) {
+    if (raw == null) return null;
+
+    // Already a string (forward-compatible).
+    if (raw is String) return raw.isEmpty ? null : raw;
+
+    // Must be a List with at least 5 elements to form a useful datetime.
+    if (raw is! List || raw.length < 5) return null;
+
+    String pad(dynamic v) => (v as int).toString().padLeft(2, '0');
+
+    final y  = raw[0];
+    final mo = pad(raw[1]);
+    final d  = pad(raw[2]);
+    final h  = pad(raw[3]);
+    final mi = pad(raw[4]);
+
+    // Include seconds when present (generatedAt has at least 6 elements).
+    if (raw.length >= 6) {
+      final s = pad(raw[5]);
+      return '$y-$mo-$d $h:$mi:$s';
     }
 
+    return '$y-$mo-$d $h:$mi';
+  }
+
+  factory InvoiceModel.fromJson(Map<String, dynamic> json) {
     return InvoiceModel(
       id: json['id'] ?? 0,
       booking: json['booking'],
@@ -95,19 +115,25 @@ class InvoiceModel {
       pickupStop: json['pickupStop'],
       dropStop: json['dropStop'],
       seatsBooked: json['seatsBooked'] ?? 0,
-      pricePerSeat: json['pricePerSeat']?.toDouble(),
-      totalPrice: json['totalPrice']?.toDouble(),
+      pricePerSeat: (json['pricePerSeat'] as num?)?.toDouble(),
+      totalPrice: (json['totalPrice'] as num?)?.toDouble(),
       tripRoute: json['tripRoute'],
-      tripStartTime: json['tripStartTime'],
-      tripEndTime: json['tripEndTime'],
-      generatedAt: parsedGeneratedAt,
+
+      // ── Fixed: these fields arrive as int arrays, not strings ────────────
+      tripStartTime: _parseDateTimeArray(json['tripStartTime']),
+      tripEndTime: _parseDateTimeArray(json['tripEndTime']),
+      generatedAt: _parseDateTimeArray(json['generatedAt']),
+
       clientName: json['clientName'] ?? '',
       startDate: List<int>.from(json['startDate'] ?? []),
       endDate: List<int>.from(json['endDate'] ?? []),
-      grandTotal: (json['grandTotal'] ?? 0.0).toDouble(),
-      airportTransfer:
-          json['airpotTransfer'], // Note: API has typo 'airpotTransfer'
-      paymentMethod: json['payMentMethod'] ?? 'Pending',
+      grandTotal: (json['grandTotal'] as num? ?? 0).toDouble(),
+
+      // API has a known typo: 'airpotTransfer'
+      airportTransfer: json['airpotTransfer'] ?? json['airportTransfer'],
+
+      // API has a known typo: 'payMentMethod'
+      paymentMethod: json['payMentMethod'] ?? json['paymentMethod'] ?? 'Pending',
       paymentType: json['paymentType'] ?? 'Not Paid',
       onlinePayment: json['onlinePayment'] ?? false,
       cashPayment: json['cashPayment'] ?? false,
@@ -116,7 +142,9 @@ class InvoiceModel {
       invoiceNumber: json['invoiceNumber'],
       status: json['status'],
       bookingDetails: json['bookingDetails'],
-      amountPaid: (json['amountPaid'] ?? 0.0).toDouble(),
+
+      // amountPaid and paymentGateway are nullable in some records.
+      amountPaid: (json['amountPaid'] as num? ?? 0).toDouble(),
       paymentGateway: json['paymentGateway'] ?? 'N/A',
       orderId: json['orderId'],
       paymentSignature: json['paymentSignature'],
@@ -163,38 +191,24 @@ class InvoiceModel {
     };
   }
 
-  // Helper methods for formatted dates
-  String get formattedStartDate {
-    if (startDate.length >= 3) {
-      return '${startDate[0]}-${startDate[1].toString().padLeft(2, '0')}-${startDate[2].toString().padLeft(2, '0')}';
-    }
-    return 'N/A';
+  // ── Formatted date helpers ────────────────────────────────────────────────
+
+  String _fmtDateParts(List<int> parts) {
+    if (parts.length < 3) return 'N/A';
+    return '${parts[0]}-${parts[1].toString().padLeft(2, '0')}-${parts[2].toString().padLeft(2, '0')}';
   }
 
-  String get formattedEndDate {
-    if (endDate.length >= 3) {
-      return '${endDate[0]}-${endDate[1].toString().padLeft(2, '0')}-${endDate[2].toString().padLeft(2, '0')}';
-    }
-    return 'N/A';
-  }
+  String get formattedStartDate => _fmtDateParts(startDate);
+  String get formattedEndDate => _fmtDateParts(endDate);
 
-  String get formattedGrandTotal {
-    return grandTotal.toStringAsFixed(3);
-  }
+  String get formattedGrandTotal => grandTotal.toStringAsFixed(3);
+  String get formattedAmountPaid => amountPaid.toStringAsFixed(3);
 
-  String get formattedAmountPaid {
-    return amountPaid.toStringAsFixed(3);
-  }
+  double get balanceAmount => grandTotal - amountPaid;
+  String get formattedBalance => balanceAmount.toStringAsFixed(3);
 
-  double get balanceAmount {
-    return grandTotal - amountPaid;
-  }
+  // ── Payment status helpers ────────────────────────────────────────────────
 
-  String get formattedBalance {
-    return balanceAmount.toStringAsFixed(3);
-  }
-
-  // Payment status helpers
   bool get isPaid => paymentComplete;
   bool get isPartiallyPaid => amountPaid > 0 && amountPaid < grandTotal;
   bool get isPending => amountPaid == 0;

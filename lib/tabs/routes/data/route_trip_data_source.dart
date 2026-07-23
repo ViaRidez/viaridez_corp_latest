@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:viaridez_corp/utils/location_utils.dart';
-import '../model/pit_stop.dart';
 import '../model/route_model.dart';
 import '../widgets/route_details_dialog.dart';
 
@@ -25,24 +24,15 @@ class RouteTripDataSource extends DataGridSource {
             columnName: 'distance', value: trip.totalDistanceKm),
         DataGridCell<int>(
             columnName: 'pitstopsCount',
-            value: _getPitStopsCount(trip.pitStops)),
+            value: trip.pitStopsCount), // ✅ use getter, not old string method
         DataGridCell<String>(columnName: 'createdAt', value: 'N/A'),
-        DataGridCell<String>(
-            columnName: 'action',
-            value:
-                'view'), // You can add created date from trip model if available
+        DataGridCell<String>(columnName: 'action', value: 'view'),
       ]);
     }).toList();
   }
 
-  int _getPitStopsCount(String pitStopsStr) {
-    try {
-      final pitStops = parsePitStops(pitStopsStr);
-      return pitStops.length;
-    } catch (e) {
-      return 0;
-    }
-  }
+  // ✅ Removed _getPitStopsCount(String) — pitStops is now List<dynamic>
+  //    Use trip.pitStopsCount (getter on model) instead
 
   List<DataGridRow> _dataGridRows = [];
 
@@ -54,7 +44,7 @@ class RouteTripDataSource extends DataGridSource {
     final int routeId =
         row.getCells().firstWhere((cell) => cell.columnName == 'routeId').value;
     final RouteTripReportModel trip =
-        routeTrips.firstWhere((t) => t.routeId == routeId);
+    routeTrips.firstWhere((t) => t.routeId == routeId);
 
     return DataGridRowAdapter(
       cells: row.getCells().map<Widget>((cell) {
@@ -68,9 +58,9 @@ class RouteTripDataSource extends DataGridSource {
                   context: context,
                   builder: (context) => RouteDetailsDialog(
                     route: trip,
-                    pitStopsStr: trip.pitStops,
-                    tripDistance: trip.completedCount,
-                    distanceCovered: trip.completedDistanceKm,
+                    pitStopsStr: trip.pitStopsStr,       // ✅ was trip.pitStops (List)
+                    tripDistance: trip.completedCount,   // ✅ resolves (defaults to 0)
+                    distanceCovered: trip.completedDistanceKm, // ✅ resolves (defaults to 0.0)
                   ),
                 );
               },
@@ -86,7 +76,7 @@ class RouteTripDataSource extends DataGridSource {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
             ),
           );

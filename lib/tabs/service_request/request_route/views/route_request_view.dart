@@ -11,6 +11,7 @@ import '../../../../utils/styles.dart';
 import '../../../../widgets/location_picker.dart';
 import '../api/route_request_service.dart';
 import '../providers/route_request_provider.dart';
+import '../providers/route_requested_provider.dart';
 
 class RouteRequestView extends StatefulWidget {
   const RouteRequestView({super.key});
@@ -635,10 +636,7 @@ class _RouteRequestViewState extends State<RouteRequestView> {
       if (provider.pitstopsExcelFile == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Please upload a pitstops Excel file',
-              style: TextStyles.snackbarText,
-            ),
+            content: Text('Please upload a pitstops Excel file', style: TextStyles.snackbarText),
             backgroundColor: Styles.errorColor,
           ),
         );
@@ -654,25 +652,31 @@ class _RouteRequestViewState extends State<RouteRequestView> {
           setState(() => _isLoading = false);
 
           if (result == RouteAddResult.success) {
+            // ✅ Refresh the route list via RouteRequestedProvider
+            final routeListProvider =
+            Provider.of<RouteRequestedProvider>(context, listen: false);
+            await routeListProvider.fetchAllRoutes(clientName: clientName!);
+
+            // ✅ Reset the form
+            provider.resetForm();
+            setState(() {
+              _startPosition = null;
+              _endPosition = null;
+            });
+
+            // ✅ Show toast then close the dialog
             toastification.show(
               context: context,
               type: ToastificationType.success,
               alignment: Alignment.topCenter,
               autoCloseDuration: const Duration(seconds: 2),
               title: const Text('Route Added Successfully'),
-              description:
-                  const Text('The route has been added to the system.'),
+              description: const Text('The route has been added to the system.'),
             );
 
-            // Refresh route list
-            await provider.fetchRoutes();
+            // ✅ Close the dialog
+            if (mounted) Navigator.of(context).pop();
 
-            // Reset form
-            provider.resetForm();
-            setState(() {
-              _startPosition = null;
-              _endPosition = null;
-            });
           } else if (result == RouteAddResult.connectionError) {
             toastification.show(
               context: context,
@@ -698,10 +702,7 @@ class _RouteRequestViewState extends State<RouteRequestView> {
           setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'Error submitting route: $e',
-                style: TextStyles.snackbarText,
-              ),
+              content: Text('Error submitting route: $e', style: TextStyles.snackbarText),
               backgroundColor: Styles.errorColor,
             ),
           );
